@@ -29,7 +29,6 @@
 #define SCALING_GOVERNOR_PATH "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"
 #define BOOSTPULSE_ONDEMAND "/sys/devices/system/cpu/cpufreq/ondemand/boostpulse"
 #define BOOSTPULSE_INTERACTIVE "/sys/devices/system/cpu/cpufreq/interactive/boostpulse"
-#define NOTIFY_ON_MIGRATE "/dev/cpuctl/apps/cpu.notify_on_migrate"
 
 struct cm_power_module {
     struct power_module base;
@@ -106,16 +105,9 @@ static int get_scaling_governor() {
     return 0;
 }
 
-#ifdef SET_INTERACTIVE_EXT
-extern void cm_power_set_interactive_ext(int on);
-#endif
-
 static void cm_power_set_interactive(struct power_module *module, int on)
 {
-    sysfs_write(NOTIFY_ON_MIGRATE, on ? "1" : "0");
-#ifdef SET_INTERACTIVE_EXT
-    cm_power_set_interactive_ext(on);
-#endif
+    return;
 }
 
 
@@ -129,16 +121,13 @@ static void configure_governor()
         sysfs_write("/sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor", "2");
         sysfs_write("/sys/devices/system/cpu/cpufreq/ondemand/down_differential", "10");
         sysfs_write("/sys/devices/system/cpu/cpufreq/ondemand/up_threshold_multi_core", "70");
-        sysfs_write("/sys/devices/system/cpu/cpufreq/ondemand/down_differential_multi_core", "3");
         sysfs_write("/sys/devices/system/cpu/cpufreq/ondemand/optimal_freq", "918000");
         sysfs_write("/sys/devices/system/cpu/cpufreq/ondemand/sync_freq", "1026000");
         sysfs_write("/sys/devices/system/cpu/cpufreq/ondemand/up_threshold_any_cpu_load", "80");
-        sysfs_write("/sys/devices/system/cpu/cpufreq/ondemand/input_boost", "1134000");
         sysfs_write("/sys/devices/system/cpu/cpufreq/ondemand/sampling_rate", "50000");
 
     } else if (strncmp(governor, "interactive", 11) == 0) {
         sysfs_write("/sys/devices/system/cpu/cpufreq/interactive/min_sample_time", "90000");
-        sysfs_write("/sys/devices/system/cpu/cpufreq/interactive/io_is_busy", "1");
         sysfs_write("/sys/devices/system/cpu/cpufreq/interactive/hispeed_freq", "1134000");
         sysfs_write("/sys/devices/system/cpu/cpufreq/interactive/above_hispeed_delay", "30000");
         sysfs_write("/sys/devices/system/cpu/cpufreq/interactive/timer_rate", "30000");
